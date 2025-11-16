@@ -60,9 +60,9 @@ adaptive_lighting:
   max_color_temp: 5500
   sleep_brightness: 1
   sleep_color_temp: 1000
-  sunrise_time:
-  sunrise_offset:
-  sunset_time:
+  sunrise_time: none
+  sunrise_offset: 
+  sunset_time: none
   sunset_offset:
   take_over_control: true
   detect_non_ha_changes: false
