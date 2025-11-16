@@ -45,3 +45,8 @@ script: !include scripts.yaml
 
 #Predictive dashboards
 usage_prediction:
+
+# Example configuration.yaml entry
+adaptive_lighting:
+  lights: []
+
