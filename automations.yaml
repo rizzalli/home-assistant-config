@@ -425,16 +425,16 @@
   mode: single
   variables:
     lounge_scene_entities:
-    - scene.kitchen_bright
-    - scene.kitchen_cool_bright
-    - scene.kitchen_dreamy_dusk
-    - scene.kitchen_lake_placid
-    - scene.kitchen_nightlight
-    - scene.kitchen_nighttime
-    - scene.kitchen_read
-    - scene.kitchen_savanna_sunset
-    - scene.kitchen_shine
-    - scene.kitchen_tropical_twilight
+    - scene.lounge_bright
+    - scene.lounge_cool_bright
+    - scene.lounge_dreamy_dusk
+    - scene.lounge_lake_placid
+    - scene.lounge_nightlight
+    - scene.lounge_nighttime
+    - scene.lounge_read
+    - scene.lounge_savanna_sunset
+    - scene.lounge_shine
+    - scene.lounge_tropical_twilight
     lounge_current: '{{ states(''input_select.scene_cycle_lounge'') }}'
     lounge_index: "{% set list = lounge_scene_entities %} {% if lounge_current in
       list %}\n  {{ list.index(lounge_current) }}\n{% else %}\n  0\n{% endif %}\n"
@@ -447,16 +447,16 @@
 
       '
     living_scene_entities:
-    - scene.kitchen_bench_bright
-    - scene.kitchen_bench_cool_bright
-    - scene.kitchen_bench_dreamy_dusk
-    - scene.kitchen_bench_lake_placid
-    - scene.kitchen_bench_nightlight
-    - scene.kitchen_bench_nighttime
-    - scene.kitchen_bench_read
-    - scene.kitchen_bench_savanna_sunset
-    - scene.kitchen_bench_shine
-    - scene.kitchen_bench_tropical_twilight
+    - scene.living_bright
+    - scene.living_bench_cool_bright
+    - scene.living_bench_dreamy_dusk
+    - scene.living_bench_lake_placid
+    - scene.living_bench_nightlight
+    - scene.living_bench_nighttime
+    - scene.living_bench_read
+    - scene.living_bench_savanna_sunset
+    - scene.living_bench_shine
+    - scene.living_bench_tropical_twilight
     living_current: '{{ states(''input_select.scene_cycle_living_room'') }}'
     living_index: "{% set list = living_scene_entities %} {% if living_current in
       list %}\n  {{ list.index(living_current) }}\n{% else %}\n  0\n{% endif %}\n"
