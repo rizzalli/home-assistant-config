@@ -1,0 +1,47 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+#include templates.yaml file
+template: !include template.yaml
+
+#redirect to mariaDB
+recorder:
+  db_url: !secret mariadb_url
+  purge_keep_days: 365
+  auto_purge: true
+
+#homeassistant:
+#  packages: !include_dir_named packages
+
+#allow cloudflare tunnel
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    # The HA add-on/Supervisor docker network (covers 172.30.32.* and 172.30.33.*)
+    - 172.30.32.0/23
+    # (Optional belt-and-braces: the exact proxy IP HA complained about)
+    - 172.30.33.1
+    # If cloudflared runs on the same host and targets localhost:
+    - 127.0.0.1
+    # If your tunnel/proxy runs on another box, add THAT host or its subnet too, e.g.:
+    - 10.1.1.0/24
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+  
+#URL for card-mod
+  extra_module_url:
+    - /local/card-mod.js
+
+#load automation
+automation: !include automations.yaml
+
+script: !include scripts.yaml
+
+#scene: !include scenes.yaml
+
+#Predictive dashboards
+usage_prediction:

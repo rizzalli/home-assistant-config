@@ -1,0 +1,13 @@
+# templates.yaml
+
+- sensor:
+    - name: "AC Current Humidity"
+      unique_id: ac_humidity_sensor
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: "{{ state_attr('climate.air_conditioner', 'current_humidity') }}"
+    - name: "AC Current Temperature"
+      unique_id: ac_temperature_sensor
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state: "{{ state_attr('climate.air_conditioner', 'current_temperature') }}"

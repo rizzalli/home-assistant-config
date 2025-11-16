@@ -1,0 +1,109 @@
+###############################################################################
+# PACKAGE: Levoit Fan Daily Cycle (100% → 3 hours → Auto)
+# Features:
+#   - Runs fan at 100% for 3 hours each day
+#   - Uses a timer so you can display remaining time on your dashboard
+#   - If fan switches to AUTO manually (button / VeSync / app), timer cancels
+#   - Switches fan to AUTO after 3 hours if no manual override occurred
+#   - Includes remaining time template sensor
+###############################################################################
+
+############################
+#  TIMER (3 hours)
+############################
+timer:
+  levoit_cycle_3h:
+    name: Levoit 3h Cycle Timer
+    duration: "03:00:00"
+    restore: false
+
+
+############################
+#  TEMPLATE SENSOR
+#  Shows: "2h 14m" or "idle"
+############################
+template:
+  - sensor:
+      - name: "Levoit Remaining Cycle Time"
+        unique_id: levoit_remaining_cycle_time
+        state: >
+          {% set t = states.timer.levoit_cycle_3h %}
+          {% if t.state != 'active' %}
+            idle
+          {% else %}
+            {% set s = t.attributes.remaining | as_timedelta %}
+            {% set h = (s.total_seconds() // 3600) | int %}
+            {% set m = ((s.total_seconds() % 3600) // 60) | int %}
+            {% if h > 0 %}
+              {{ h }}h {{ m }}m
+            {% else %}
+              {{ m }}m
+            {% endif %}
+          {% endif %}
+
+
+############################
+#  AUTOMATION
+#  Daily Cycle + Manual Override Reset
+############################
+automation:
+  - id: levoit_daily_cycle
+    alias: "Levoit Fan: Daily 3h Cycle with Manual Auto Reset"
+    mode: restart
+    description: >
+      Starts fan at 100% daily for 3 hours; goes to Auto afterward; cancels 
+      timer if fan manually changed to Auto.
+
+    trigger:
+      - platform: time
+        at: "18:00:00"
+        id: start
+
+      - platform: template
+        id: auto_detected
+        value_template: >
+          {{ is_state_attr('fan.levoit', 'preset_mode', 'auto') }}
+
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.levoit_cycle_3h
+        id: timer_finished
+
+    action:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: start
+            sequence:
+              - service: fan.set_percentage
+                target:
+                  entity_id: fan.levoit
+                data:
+                  percentage: 100
+              - service: timer.start
+                target:
+                  entity_id: timer.levoit_cycle_3h
+
+          - conditions:
+              - condition: trigger
+                id: auto_detected
+              - condition: state
+                entity_id: timer.levoit_cycle_3h
+                state: active
+            sequence:
+              - service: timer.cancel
+                target:
+                  entity_id: timer.levoit_cycle_3h
+
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: timer_finished
+            sequence:
+              - service: fan.set_preset_mode
+                target:
+                  entity_id: fan.levoit
+                data:
+                  preset_mode: auto
+

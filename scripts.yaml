@@ -1,0 +1,24 @@
+delete_orphaned_database_entities_safe:
+  alias: Delete orphaned database entities (Safe)
+  sequence:
+  - action: homeassistant.list_orphaned_database_entities
+    response_variable: orphaned
+  - condition: template
+    value_template: '{{ orphaned.entities | length > 0 }}'
+  - action: system_log.write
+    data:
+      message: "\U0001F9F9 Orphaned entities found and queued for deletion: {{ orphaned.entities
+        | join(', ') }}"
+      level: warning
+  - action: recorder.purge_entities
+    target:
+      entity_id: '{{ orphaned.entities }}'
+    data:
+      keep_days: 0
+  - action: system_log.write
+    data:
+      message: ✅ Purge complete. {{ orphaned.entities | length }} orphaned entities
+        removed from the database.
+      level: info
+  mode: single
+  description: Safe version that logs actions before deleting.
