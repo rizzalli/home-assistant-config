@@ -1,0 +1,144 @@
+alias: Lounge Switch
+description: Cycle scenes on bottom button, dim with middle buttons
+triggers:
+  - trigger: event
+    event_type: hue_event
+    event_data:
+      device_id: f78a17037acdcf611747baa436eebd1a
+conditions: []
+actions:
+  - choose:
+      - alias: Button 1 - Short Release (Cycle Bench Scenes)
+        conditions:
+          - condition: template
+            value_template: |
+              {{ trigger.platform == 'event'
+                 and trigger.event.data.type == 'short_release'
+                 and trigger.event.data.subtype == 1 }}
+        sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: "{{ lounge_next_entity }}"
+            data: {}
+          - action: input_select.select_option
+            data:
+              option: "{{ living_next_entity }}"
+            target:
+              entity_id: input_select.scene_cycle_living_room
+      - alias: Button 1 - Long Release (Bench Off)
+        conditions:
+          - condition: template
+            value_template: |
+              {{ trigger.platform == 'event'
+                 and trigger.event.data.type == 'long_release'
+                 and trigger.event.data.subtype == 1 }}
+        sequence:
+          - action: light.turn_off
+            target:
+              entity_id: light.living_room
+            data:
+              transition: 5
+      - alias: Button 2 - Short Release (Brightness Up)
+        conditions:
+          - condition: template
+            value_template: |
+              {{ trigger.platform == 'event'
+                 and trigger.event.data.type == 'short_release'
+                 and trigger.event.data.subtype == 2 }}
+        sequence:
+          - action: light.turn_on
+            target:
+              area_id: living_room
+            data:
+              brightness_step_pct: 20
+      - alias: Button 3 - Short Release (Brightness Down)
+        conditions:
+          - condition: template
+            value_template: |
+              {{ trigger.platform == 'event'
+                 and trigger.event.data.type == 'short_release'
+                 and trigger.event.data.subtype == 3 }}
+        sequence:
+          - action: light.turn_on
+            target:
+              area_id: living_room
+            data:
+              brightness_step_pct: -20
+      - alias: Button 4 - Short Release (Cycle Kitchen Scenes)
+        conditions:
+          - condition: template
+            value_template: |
+              {{ trigger.platform == 'event'
+                 and trigger.event.data.type == 'initial_press'
+                 and trigger.event.data.subtype == 4 }}
+        sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: "{{ lounge_next_entity }}"
+            data: {}
+          - action: input_select.select_option
+            data:
+              option: "{{ lounge_next_entity }}"
+            target:
+              entity_id: input_select.scene_cycle_lounge
+      - alias: Button 4 - Long Release (Kitchen Off)
+        conditions:
+          - condition: template
+            value_template: |
+              {{ trigger.platform == 'event'
+                 and trigger.event.data.type == 'long_release'
+                 and trigger.event.data.subtype == 4 }}
+        sequence:
+          - action: light.turn_off
+            target:
+              entity_id: light.lounge
+            data:
+              transition: 5
+mode: single
+variables:
+  lounge_scene_entities:
+    - scene.kitchen_bright
+    - scene.kitchen_cool_bright
+    - scene.kitchen_dreamy_dusk
+    - scene.kitchen_lake_placid
+    - scene.kitchen_nightlight
+    - scene.kitchen_nighttime
+    - scene.kitchen_read
+    - scene.kitchen_savanna_sunset
+    - scene.kitchen_shine
+    - scene.kitchen_tropical_twilight
+  lounge_current: "{{ states('input_select.scene_cycle_lounge') }}"
+  lounge_index: |
+    {% set list = lounge_scene_entities %} {% if lounge_current in list %}
+      {{ list.index(lounge_current) }}
+    {% else %}
+      0
+    {% endif %}
+  lounge_next_index: >
+    {% set list = kitchen_scene_entities %} {{ (kitchen_index | int + 1) % (list
+    | length) }}
+  lounge_next_entity: |
+    {% set list = kitchen_scene_entities %} {{ list[kitchen_next_index | int] }}
+  living_scene_entities:
+    - scene.kitchen_bench_bright
+    - scene.kitchen_bench_cool_bright
+    - scene.kitchen_bench_dreamy_dusk
+    - scene.kitchen_bench_lake_placid
+    - scene.kitchen_bench_nightlight
+    - scene.kitchen_bench_nighttime
+    - scene.kitchen_bench_read
+    - scene.kitchen_bench_savanna_sunset
+    - scene.kitchen_bench_shine
+    - scene.kitchen_bench_tropical_twilight
+  living_current: "{{ states('input_select.scene_cycle_living_room') }}"
+  living_index: |
+    {% set list = living_scene_entities %} {% if living_current in list %}
+      {{ list.index(living_current) }}
+    {% else %}
+      0
+    {% endif %}
+  living_next_index: >
+    {% set list = living_scene_entities %} {{ (living_index | int + 1) % (list |
+    length) }}
+  living_next_entity: |
+    {% set list = living_scene_entities %} {{ list[living_next_index | int] }}
