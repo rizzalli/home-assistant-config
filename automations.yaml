@@ -368,7 +368,7 @@
   - trigger: event
     event_type: hue_event
     event_data:
-      device_id: f78a17037acdcf611747baa436eebd1a
+      device_id: 8110fb5d28433b9a8fea072d30876c64
   conditions: []
   actions:
   - choose:
