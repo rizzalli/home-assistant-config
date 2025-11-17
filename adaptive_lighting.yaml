@@ -1,13 +1,19 @@
-#adaptive_lighting:
+adaptive_lighting:
 - name: "Adaptive-Lights-Living"
   lights:
-    - light.desk_lamp
-    - light.kitchen_bench
-    - light.kitchen_strip
-    - light.floor_lamp
-    - light.tv_light
-    - light.lounge
-    - light.lounge_group_test
+    -light.group_home
+   - light.home
+   - light.group_living
+   - light.group_lounge
+   - light.lounge
+   - light.group_kitchen
+   - light.kitchen
+   - light.kitchen_strip
+   - light.kitchen_bench
+   - light.kitchen_bench_2	
+   - light.group_office
+   - light.office
+   - light.desk_lamp
   prefer_rgb_color: false
   transition: 45
   initial_transition: 1
@@ -26,7 +32,6 @@
   lights:
     - light.bedside_lamp
     - light.bedroom
-    - light.bedroom_group
   prefer_rgb_color: false
   transition: 45
   initial_transition: 1
@@ -40,3 +45,24 @@
   take_over_control: true
   detect_non_ha_changes: false
   only_once: false
+
+- name: "Utility Lights"
+  lights:
+    - light.group_utility
+    - light.pantry_lamp
+    - light.pantry
+    - light.laundry
+    - light.laundry_lamp
+  prefer_rgb_color: false
+  transition: 45
+  initial_transition: 1
+  interval: 90
+  min_brightness: 1
+  max_brightness: 100
+  min_color_temp: 2000
+  max_color_temp: 5500
+  sleep_brightness: 1
+  sleep_color_temp: 1000
+  take_over_control: true
+  detect_non_ha_changes: false
+  only_once: false    
