@@ -22,3 +22,72 @@ delete_orphaned_database_entities_safe:
       level: info
   mode: single
   description: Safe version that logs actions before deleting.
+
+motion_light_helper:
+  alias: Motion-activated light helper
+  description: Turns on a light when motion is detected and waits until the
+    sensor has been clear for the configured amount of time before turning the
+    light off again.
+  mode: restart
+  fields:
+    light_target:
+      name: Light
+      description: The light entity to control.
+      selector:
+        entity:
+          domain: light
+    motion_sensor:
+      name: Motion sensor
+      description: The binary_sensor that reports motion.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    off_delay:
+      name: Clear duration (seconds)
+      description: How long the sensor must stay clear before the light turns
+        off.
+      default: 120
+      selector:
+        number:
+          min: 5
+          max: 600
+          unit_of_measurement: seconds
+          mode: box
+    brightness_pct:
+      name: Brightness %
+      description: Optional brightness level for the turn_on call.
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: percent
+          mode: slider
+      required: false
+    transition:
+      name: Turn-off transition (seconds)
+      description: Fade duration used when turning the light off.
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 60
+          unit_of_measurement: seconds
+          mode: slider
+  sequence:
+  - action: light.turn_on
+    target:
+      entity_id: '{{ light_target }}'
+    data:
+      brightness_pct: '{{ brightness_pct | default(omit) }}'
+  - wait_for_trigger:
+    - platform: state
+      entity_id: '{{ motion_sensor }}'
+      from: 'on'
+      to: 'off'
+  - delay: '{{ off_delay | int }}'
+  - action: light.turn_off
+    target:
+      entity_id: '{{ light_target }}'
+    data:
+      transition: '{{ transition | int }}'
