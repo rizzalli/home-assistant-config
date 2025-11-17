@@ -9,30 +9,18 @@
     from: 'off'
     to: 'on'
   actions:
-  - alias: Turn on the light
-    action: light.turn_on
-    target:
-      entity_id: light.pantry
-  - alias: Wait until there is no motion from device
-    wait_for_trigger:
-      trigger: state
-      entity_id: binary_sensor.pantry_motion
-      from: 'on'
-      to: 'off'
-  - alias: Wait the number of seconds that has been set
-    delay: 120
-  - alias: Turn off the light
-    action: light.turn_off
+  - action: script.motion_light_helper
     data:
+      light_target: light.pantry
+      motion_sensor: binary_sensor.pantry_motion
+      off_delay: 120
       transition: 10
-    target:
-      entity_id: light.pantry
   mode: restart
   max_exceeded: silent
 
 #Laundry Light Motion
 - id: '1762961284517'
-  alias: Laundry Light - Motioin
+  alias: Laundry Light - Motion
   description: ''
   triggers:
   - trigger: state
@@ -40,26 +28,13 @@
     from: 'off'
     to: 'on'
   actions:
-  - alias: Turn on the light
-    action: light.turn_on
+  - action: script.motion_light_helper
     data:
+      light_target: light.laundry
+      motion_sensor: binary_sensor.laundry_motion
       brightness_pct: 80
-    target:
-      entity_id: light.laundry
-  - alias: Wait until there is no motion from device
-    wait_for_trigger:
-      trigger: state
-      entity_id: binary_sensor.laundry_motion
-      from: 'on'
-      to: 'off'
-  - alias: Wait the number of seconds that has been set
-    delay: 120
-  - alias: Turn off the light
-    action: light.turn_off
-    data:
+      off_delay: 120
       transition: 10
-    target:
-      entity_id: light.laundry
   mode: restart
   max_exceeded: silent
 
@@ -72,71 +47,58 @@
   description: ''
   triggers:
   - trigger: state
-    entity_id:
-    - device_tracker.rizzas_iphone
-    to:
-    - not_home
+    entity_id: device_tracker.rizzas_iphone
+    from: home
+    to: not_home
   conditions: []
   actions:
   - parallel:
     - sequence:
       - action: fan.set_percentage
-        metadata: {}
-        data:
-          percentage: 100
         target:
           entity_id: fan.levoit
-      - parallel:
-        - action: timer.start
-          target:
-            entity_id: timer.purifier_auto_timer_away
-          data: {}
-        - sequence:
-          - delay:
-              hours: 2
-              minutes: 0
-              seconds: 0
-              milliseconds: 0
-          - action: fan.set_preset_mode
-            metadata: {}
-            data:
-              preset_mode: auto
-            target:
-              entity_id: fan.levoit
-  - parallel:
-    - parallel:
+        data:
+          percentage: 100
+      - action: timer.cancel
+        target:
+          entity_id: timer.purifier_auto_timer_nightly
+      - action: timer.start
+        target:
+          entity_id: timer.purifier_auto_timer_away
+      - delay:
+          hours: 2
+          minutes: 0
+          seconds: 0
+          milliseconds: 0
+      - action: fan.set_preset_mode
+        target:
+          entity_id: fan.levoit
+        data:
+          preset_mode: auto
+    - sequence:
       - action: light.turn_off
-        metadata: {}
-        data: {}
         target:
           entity_id: light.home
       - action: remote.turn_off
-        metadata: {}
-        data: {}
         target:
           device_id: 5bc5da8668985a86ddc52f3b9ea78280
       - action: media_player.media_pause
-        metadata: {}
-        data: {}
         target:
           device_id: 66e989b271090f6003939143c7ab81eb
       - action: remote.turn_off
-        metadata: {}
-        data: {}
         target:
           device_id: b79fc09211ba72a028332fee043d1b51
   mode: single
 
 #Leave home routine
 - id: '1763003924178'
-  alias: Derryn Arrives - Purifier Auto / Lights On
+  alias: Derryn Arrives - Purifier Auto
   description: ''
   triggers:
   - trigger: state
-    entity_id:
-    - device_tracker.rizzas_iphone
-    to:
-    - home
+    entity_id: device_tracker.rizzas_iphone
+    from: not_home
+    to: home
   conditions: []
   actions:
   - parallel:
@@ -150,6 +112,9 @@
       data: {}
       target:
         entity_id: timer.purifier_auto_timer_away
+    - action: timer.cancel
+      target:
+        entity_id: timer.purifier_auto_timer_nightly
   mode: single
 
 ##################################
@@ -218,7 +183,7 @@
       conditions:
       - condition: template
         value_template: "{{ trigger.platform == 'event'\n   and trigger.event.data.type
-          == 'initial_press'\n   and trigger.event.data.subtype == 4 }}\n"
+          == 'short_release'\n   and trigger.event.data.subtype == 4 }}\n"
       sequence:
       - action: scene.turn_on
         target:
@@ -242,49 +207,56 @@
           transition: 5
   mode: single
   variables:
-    kitchen_scene_entities:
-    - scene.kitchen_bright
-    - scene.kitchen_cool_bright
-    - scene.kitchen_dreamy_dusk
-    - scene.kitchen_lake_placid
-    - scene.kitchen_nightlight
-    - scene.kitchen_nighttime
-    - scene.kitchen_read
-    - scene.kitchen_savanna_sunset
-    - scene.kitchen_shine
-    - scene.kitchen_tropical_twilight
-    kitchen_current: '{{ states(''input_select.scene_cycle_kitchen'') }}'
-    kitchen_index: "{% set list = kitchen_scene_entities %} {% if kitchen_current
-      in list %}\n  {{ list.index(kitchen_current) }}\n{% else %}\n  0\n{% endif %}\n"
-    kitchen_next_index: '{% set list = kitchen_scene_entities %} {{ (kitchen_index
-      | int + 1) % (list | length) }}
-
-      '
-    kitchen_next_entity: '{% set list = kitchen_scene_entities %} {{ list[kitchen_next_index
-      | int] }}
-
-      '
-    bench_scene_entities:
-    - scene.kitchen_bench_bright
-    - scene.kitchen_bench_cool_bright
-    - scene.kitchen_bench_dreamy_dusk
-    - scene.kitchen_bench_lake_placid
-    - scene.kitchen_bench_nightlight
-    - scene.kitchen_bench_nighttime
-    - scene.kitchen_bench_read
-    - scene.kitchen_bench_savanna_sunset
-    - scene.kitchen_bench_shine
-    - scene.kitchen_bench_tropical_twilight
-    bench_current: '{{ states(''input_select.scene_cycle_kitchen_bench'') }}'
-    bench_index: "{% set list = bench_scene_entities %} {% if bench_current in list
-      %}\n  {{ list.index(bench_current) }}\n{% else %}\n  0\n{% endif %}\n"
-    bench_next_index: '{% set list = bench_scene_entities %} {{ (bench_index | int
-      + 1) % (list | length) }}
-
-      '
-    bench_next_entity: '{% set list = bench_scene_entities %} {{ list[bench_next_index
-      | int] }}
-      '
+    kitchen_scene_entities: >-
+      {{ state_attr('input_select.scene_cycle_kitchen', 'options') or [] }}
+    kitchen_current: "{{ states('input_select.scene_cycle_kitchen') }}"
+    kitchen_index: >-
+      {% set list = kitchen_scene_entities %}
+      {% if kitchen_current in list %}
+        {{ list.index(kitchen_current) }}
+      {% else %}
+        0
+      {% endif %}
+    kitchen_next_index: >-
+      {% set list = kitchen_scene_entities %}
+      {% set length = list | length %}
+      {% if length == 0 %}
+        0
+      {% else %}
+        {{ (kitchen_index | int + 1) % length }}
+      {% endif %}
+    kitchen_next_entity: >-
+      {% set list = kitchen_scene_entities %}
+      {% if list | length == 0 %}
+        {{ kitchen_current }}
+      {% else %}
+        {{ list[kitchen_next_index | int] }}
+      {% endif %}
+    bench_scene_entities: >-
+      {{ state_attr('input_select.scene_cycle_kitchen_bench', 'options') or [] }}
+    bench_current: "{{ states('input_select.scene_cycle_kitchen_bench') }}"
+    bench_index: >-
+      {% set list = bench_scene_entities %}
+      {% if bench_current in list %}
+        {{ list.index(bench_current) }}
+      {% else %}
+        0
+      {% endif %}
+    bench_next_index: >-
+      {% set list = bench_scene_entities %}
+      {% set length = list | length %}
+      {% if length == 0 %}
+        0
+      {% else %}
+        {{ (bench_index | int + 1) % length }}
+      {% endif %}
+    bench_next_entity: >-
+      {% set list = bench_scene_entities %}
+      {% if list | length == 0 %}
+        {{ bench_current }}
+      {% else %}
+        {{ list[bench_next_index | int] }}
+      {% endif %}
 
 #################################
 #################################
@@ -298,9 +270,11 @@
   - at: '23:55:00'
     id: start
     trigger: time
-  - value_template: '{{ is_state_attr(''fan.levoit'', ''preset_mode'', ''auto'') }}'
+  - trigger: state
+    entity_id: fan.levoit
+    attribute: preset_mode
+    to: auto
     id: auto_detected
-    trigger: template
   - event_type: timer.finished
     event_data:
       entity_id: timer.purifier_auto_timer_nightly
@@ -317,6 +291,9 @@
           value_template: '{{ trigger.platform is none }}'
       sequence:
       - target:
+          entity_id: timer.purifier_auto_timer_away
+        action: timer.cancel
+      - target:
           entity_id: fan.levoit
         data:
           percentage: 100
@@ -327,8 +304,6 @@
     - conditions:
       - condition: trigger
         id: auto_detected
-      - condition: template
-        value_template: '{{ trigger.platform != none }}'
       - condition: state
         entity_id: timer.purifier_auto_timer_nightly
         state: active
@@ -448,46 +423,53 @@
           transition: 5
   mode: single
   variables:
-    lounge_scene_entities:
-    - scene.lounge_bright
-    - scene.lounge_cool_bright
-    - scene.lounge_dreamy_dusk
-    - scene.lounge_lake_placid
-    - scene.lounge_nightlight
-    - scene.lounge_nighttime
-    - scene.lounge_read
-    - scene.lounge_savanna_sunset
-    - scene.lounge_shine
-    - scene.lounge_tropical_twilight
-    lounge_current: '{{ states(''input_select.scene_cycle_lounge'') }}'
-    lounge_index: "{% set list = lounge_scene_entities %} {% if lounge_current in
-      list %}\n  {{ list.index(lounge_current) }}\n{% else %}\n  0\n{% endif %}\n"
-    lounge_next_index: '{% set list = lounge_scene_entities %} {{ (lounge_index
-      | int + 1) % (list | length) }}
-
-      '
-    lounge_next_entity: '{% set list = lounge_scene_entities %} {{ list[lounge_next_index
-      | int] }}
-
-      '
-    living_scene_entities:
-    - scene.living_room_bright
-    - scene.living_room_cool_bright
-    - scene.living_room_dreamy_dusk
-    - scene.living_room_lake_placid
-    - scene.living_room_nightlight
-    - scene.living_room_nighttime
-    - scene.living_room_read
-    - scene.living_room_savanna_sunset
-    - scene.living_room_shine
-    - scene.living_room_tropical_twilight
-    living_current: '{{ states(''input_select.scene_cycle_living_room'') }}'
-    living_index: "{% set list = living_scene_entities %} {% if living_current in
-      list %}\n  {{ list.index(living_current) }}\n{% else %}\n  0\n{% endif %}\n"
-    living_next_index: '{% set list = living_scene_entities %} {{ (living_index |
-      int + 1) % (list | length) }}
-
-      '
-    living_next_entity: '{% set list = living_scene_entities %} {{ list[living_next_index
-      | int] }}
-      '
+    lounge_scene_entities: >-
+      {{ state_attr('input_select.scene_cycle_lounge', 'options') or [] }}
+    lounge_current: "{{ states('input_select.scene_cycle_lounge') }}"
+    lounge_index: >-
+      {% set list = lounge_scene_entities %}
+      {% if lounge_current in list %}
+        {{ list.index(lounge_current) }}
+      {% else %}
+        0
+      {% endif %}
+    lounge_next_index: >-
+      {% set list = lounge_scene_entities %}
+      {% set length = list | length %}
+      {% if length == 0 %}
+        0
+      {% else %}
+        {{ (lounge_index | int + 1) % length }}
+      {% endif %}
+    lounge_next_entity: >-
+      {% set list = lounge_scene_entities %}
+      {% if list | length == 0 %}
+        {{ lounge_current }}
+      {% else %}
+        {{ list[lounge_next_index | int] }}
+      {% endif %}
+    living_scene_entities: >-
+      {{ state_attr('input_select.scene_cycle_living_room', 'options') or [] }}
+    living_current: "{{ states('input_select.scene_cycle_living_room') }}"
+    living_index: >-
+      {% set list = living_scene_entities %}
+      {% if living_current in list %}
+        {{ list.index(living_current) }}
+      {% else %}
+        0
+      {% endif %}
+    living_next_index: >-
+      {% set list = living_scene_entities %}
+      {% set length = list | length %}
+      {% if length == 0 %}
+        0
+      {% else %}
+        {{ (living_index | int + 1) % length }}
+      {% endif %}
+    living_next_entity: >-
+      {% set list = living_scene_entities %}
+      {% if list | length == 0 %}
+        {{ living_current }}
+      {% else %}
+        {{ list[living_next_index | int] }}
+      {% endif %}
