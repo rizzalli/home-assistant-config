@@ -55,6 +55,8 @@ adaptive_lighting:
     - light.kitchen_strip
     - light.floor_lamp
     - light.tv_light
+    - light.lounge
+    - light.lounge_group_test
   prefer_rgb_color: false
   transition: 45
   initial_transition: 1
