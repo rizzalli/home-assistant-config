@@ -490,5 +490,4 @@
       '
     living_next_entity: '{% set list = living_scene_entities %} {{ list[living_next_index
       | int] }}
-
       '
