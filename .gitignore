@@ -7,3 +7,4 @@ storage/
 secrets.yaml
 *.db
 *.log
+/homeassistant/homeassistant.code-workspace
