@@ -1,19 +1,12 @@
 adaptive_lighting:
   - name: "adaptive-lights-living"
     lights:
-      - light.group_home
-      - light.home
-      - light.group_living
-      - light.group_lounge
-      - light.lounge
-      - light.group_kitchen
-      - light.kitchen
+      - light.tv_light
+      - light.floor_lamp
+      - light.desk_lamp
+      - light.living_room
       - light.kitchen_strip
       - light.kitchen_bench
-      - light.kitchen_bench_2
-      - light.group_office
-      - light.office
-      - light.desk_lamp
     prefer_rgb_color: false
     transition: 45
     initial_transition: 1
@@ -25,13 +18,12 @@ adaptive_lighting:
     sleep_brightness: 1
     sleep_color_temp: 1000
     take_over_control: true
-    detect_non_ha_changes: false
+    detect_non_ha_changes: true
     only_once: false
 
   - name: "adaptive-lights-bedroom"
     lights:
       - light.bedside_lamp
-      - light.bedroom
     prefer_rgb_color: false
     transition: 45
     initial_transition: 1
@@ -43,16 +35,12 @@ adaptive_lighting:
     sleep_brightness: 1
     sleep_color_temp: 1000
     take_over_control: true
-    detect_non_ha_changes: false
+    detect_non_ha_changes: true
     only_once: false
 
   - name: "adaptive-lights-pantry"
     lights:
-      - light.group_utility
-      - light.pantry_lamp
       - light.pantry
-      - light.laundry
-      - light.laundry_lamp
     prefer_rgb_color: false
     transition: 45
     initial_transition: 1
@@ -64,15 +52,11 @@ adaptive_lighting:
     sleep_brightness: 1
     sleep_color_temp: 1000
     take_over_control: true
-    detect_non_ha_changes: false
+    detect_non_ha_changes: true
     only_once: false
 
   - name: "adaptive-lights-laundry"
     lights:
-      - light.group_utility
-      - light.pantry_lamp
-      - light.pantry
-      - light.laundry
       - light.laundry_lamp
     prefer_rgb_color: false
     transition: 45
@@ -85,5 +69,5 @@ adaptive_lighting:
     sleep_brightness: 1
     sleep_color_temp: 1000
     take_over_control: true
-    detect_non_ha_changes: false
+    detect_non_ha_changes: true
     only_once: false
