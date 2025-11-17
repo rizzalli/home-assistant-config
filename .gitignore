@@ -1,10 +1,64 @@
+# -------------------------------------------------------------------
+# HOME ASSISTANT - COMPLETE .gitignore (PRODUCTION SAFE)
+# -------------------------------------------------------------------
+
+# 🔐 Sensitive HA tokens, OAuth, credentials
+.storage/
 secrets.yaml
+cloud/
+auth/
+auth_provider.*
+
+# 🗄️ Databases and history files
+home-assistant_v2.db
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal
+
+# 🗂️ Backups & snapshots
+backup/
+*.tar
+*.zip
+
+# 🖼️ Camera & TTS cache
+tts/
+tts_cache/
+www/.home-assistant/
+
+# 🛠️ Build / temp / cache data
 *.log
-__pycache__/
-storage/
-.storage/
-.storage/
-secrets.yaml
+*.pid
 *.db
-*.log
-/homeassistant/homeassistant.code-workspace
+*.sqlite
+*.sqlite3
+*.tmp
+*.cache
+*.pyc
+__pycache__/
+
+# 🔊 Media folders you don’t want in Git (huge)
+media/
+www/media/
+
+# 🧪 Integrations that generate state files
+.esphome/
+.esphome/**/*
+node-red/
+node-red/**
+www/community/**
+
+# 🧹 HACS-related non-source files
+custom_components/hacs/
+hacs/
+hacs.*/ 
+
+# 🧪 ADD-ONS THAT SHOULD NOT BE TRACKED
+addons/
+deps/
+
+# Exclude HA Supervisor internal files if present
+homeassistant/.*
+._*
+
+# macOS crap
+.DS_Store
+

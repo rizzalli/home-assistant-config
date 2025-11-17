@@ -1,6 +1,5 @@
 {
-    "files.associations": {
-        "*.yaml": "home-assistant"
-    },
-    "editor.defaultFormatter": "keesschollaart.vscode-home-assistant"
+  "files.associations": {
+    "*.yaml": "home-assistant"
+  }
 }
