@@ -62,4 +62,3 @@ homeassistant/.*
 # macOS crap
 .DS_Store
 
-/homeassistant/homeassistant.code-workspace
