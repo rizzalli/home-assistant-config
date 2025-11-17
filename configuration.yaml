@@ -33,8 +33,8 @@ frontend:
 
   
 #URL for card-mod
-  extra_module_url:
-    - /local/card-mod.js
+#  extra_module_url:
+#    - /local/card-mod.js
 
 #load automation
 automation: !include automations.yaml
