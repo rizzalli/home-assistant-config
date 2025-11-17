@@ -47,5 +47,5 @@ script: !include scripts.yaml
 usage_prediction:
 
 #Adaptive Lighting
-adaptive_lighting: !include adaptive_lighting.yaml
+#adaptive_lighting: !include adaptive_lighting.yaml
 
