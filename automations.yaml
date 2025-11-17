@@ -1,13 +1,12 @@
-
-#Pantry Light Motion
 - id: '1762961175136'
   alias: Pantry Light - Motion
   description: ''
   triggers:
   - trigger: state
-    entity_id: binary_sensor.pantry_motion
-    from: 'off'
-    to: 'on'
+    entity_id:
+    - binary_sensor.pantry_motion
+    to:
+    - 'on'
   actions:
   - alias: Turn on the light
     action: light.turn_on
@@ -15,12 +14,22 @@
       entity_id: light.pantry
   - alias: Wait until there is no motion from device
     wait_for_trigger:
-      trigger: state
-      entity_id: binary_sensor.pantry_motion
-      from: 'on'
-      to: 'off'
+    - trigger: state
+      entity_id:
+      - binary_sensor.pantry_motion
+      to:
+      - 'off'
+    timeout:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
   - alias: Wait the number of seconds that has been set
-    delay: 120
+    delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
   - alias: Turn off the light
     action: light.turn_off
     data:
@@ -29,16 +38,15 @@
       entity_id: light.pantry
   mode: restart
   max_exceeded: silent
-
-#Laundry Light Motion
 - id: '1762961284517'
   alias: Laundry Light - Motioin
   description: ''
   triggers:
   - trigger: state
-    entity_id: binary_sensor.laundry_motion
-    from: 'off'
-    to: 'on'
+    entity_id:
+    - binary_sensor.laundry_motion
+    to:
+    - 'on'
   actions:
   - alias: Turn on the light
     action: light.turn_on
@@ -48,12 +56,23 @@
       entity_id: light.laundry
   - alias: Wait until there is no motion from device
     wait_for_trigger:
-      trigger: state
-      entity_id: binary_sensor.laundry_motion
-      from: 'on'
-      to: 'off'
+    - trigger: state
+      entity_id:
+      - binary_sensor.laundry_motion
+      to:
+      - 'off'
+    timeout:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+    continue_on_timeout: false
   - alias: Wait the number of seconds that has been set
-    delay: 120
+    delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
   - alias: Turn off the light
     action: light.turn_off
     data:
@@ -62,11 +81,6 @@
       entity_id: light.laundry
   mode: restart
   max_exceeded: silent
-
-##################################################
-##################################################
-
-#Leave home routine
 - id: '1763000551180'
   alias: 'Leaves Home - Light Off / Media Off / Purifier High 2 hours '
   description: ''
@@ -126,8 +140,6 @@
         target:
           device_id: b79fc09211ba72a028332fee043d1b51
   mode: single
-
-#Leave home routine
 - id: '1763003924178'
   alias: Derryn Arrives - Purifier Auto / Lights On
   description: ''
@@ -151,11 +163,6 @@
       target:
         entity_id: timer.purifier_auto_timer_away
   mode: single
-
-##################################
-##################################
-
-#Kitchen Switch
 - id: '1763215181108'
   alias: Kitchen Switch - Scene Cycle
   description: Cycle scenes on bottom button, dim with middle buttons
@@ -283,13 +290,7 @@
 
       '
     bench_next_entity: '{% set list = bench_scene_entities %} {{ list[bench_next_index
-      | int] }}
-      '
-
-#################################
-#################################
-
-#Lounge Switch
+      | int] }} '
 - id: '1763256475040'
   alias: Purifier - Night Auto-Clean
   description: Runs Levoit at 100% from 23:55 for 3 hours, then Auto; cancels if put
@@ -357,10 +358,6 @@
           preset_mode: auto
         action: fan.set_preset_mode
   mode: single
-
-##############################################
-##############################################
-
 - id: '1763294657209'
   alias: Lounge Switch
   description: Cycle scenes on bottom button, dim with middle buttons
@@ -462,8 +459,8 @@
     lounge_current: '{{ states(''input_select.scene_cycle_lounge'') }}'
     lounge_index: "{% set list = lounge_scene_entities %} {% if lounge_current in
       list %}\n  {{ list.index(lounge_current) }}\n{% else %}\n  0\n{% endif %}\n"
-    lounge_next_index: '{% set list = lounge_scene_entities %} {{ (lounge_index
-      | int + 1) % (list | length) }}
+    lounge_next_index: '{% set list = lounge_scene_entities %} {{ (lounge_index |
+      int + 1) % (list | length) }}
 
       '
     lounge_next_entity: '{% set list = lounge_scene_entities %} {{ list[lounge_next_index
