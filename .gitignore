@@ -62,3 +62,5 @@ homeassistant/.*
 # macOS crap
 .DS_Store
 
+#exclude
+.ha.run.lock
