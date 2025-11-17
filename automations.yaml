@@ -1,3 +1,5 @@
+
+#Pantry Light Motion
 - id: '1762961175136'
   alias: Pantry Light - Motion
   description: ''
@@ -27,6 +29,8 @@
       entity_id: light.pantry
   mode: restart
   max_exceeded: silent
+
+#Laundry Light Motion
 - id: '1762961284517'
   alias: Laundry Light - Motioin
   description: ''
@@ -58,6 +62,11 @@
       entity_id: light.laundry
   mode: restart
   max_exceeded: silent
+
+##################################################
+##################################################
+
+#Leave home routine
 - id: '1763000551180'
   alias: 'Leaves Home - Light Off / Media Off / Purifier High 2 hours '
   description: ''
@@ -117,6 +126,8 @@
         target:
           device_id: b79fc09211ba72a028332fee043d1b51
   mode: single
+
+#Leave home routine
 - id: '1763003924178'
   alias: Derryn Arrives - Purifier Auto / Lights On
   description: ''
@@ -140,6 +151,11 @@
       target:
         entity_id: timer.purifier_auto_timer_away
   mode: single
+
+##################################
+##################################
+
+#Kitchen Switch
 - id: '1763215181108'
   alias: Kitchen Switch - Scene Cycle
   description: Cycle scenes on bottom button, dim with middle buttons
@@ -268,8 +284,12 @@
       '
     bench_next_entity: '{% set list = bench_scene_entities %} {{ list[bench_next_index
       | int] }}
-
       '
+
+#################################
+#################################
+
+#Lounge Switch
 - id: '1763256475040'
   alias: Purifier - Night Auto-Clean
   description: Runs Levoit at 100% from 23:55 for 3 hours, then Auto; cancels if put
@@ -337,6 +357,10 @@
           preset_mode: auto
         action: fan.set_preset_mode
   mode: single
+
+##############################################
+##############################################
+
 - id: '1763294657209'
   alias: Lounge Switch
   description: Cycle scenes on bottom button, dim with middle buttons
@@ -356,7 +380,7 @@
       sequence:
       - action: scene.turn_on
         target:
-          entity_id: '{{ lounge_next_entity }}'
+          entity_id: '{{ living_next_entity }}'
         data: {}
       - action: input_select.select_option
         data:
@@ -438,25 +462,25 @@
     lounge_current: '{{ states(''input_select.scene_cycle_lounge'') }}'
     lounge_index: "{% set list = lounge_scene_entities %} {% if lounge_current in
       list %}\n  {{ list.index(lounge_current) }}\n{% else %}\n  0\n{% endif %}\n"
-    lounge_next_index: '{% set list = kitchen_scene_entities %} {{ (kitchen_index
+    lounge_next_index: '{% set list = lounge_scene_entities %} {{ (lounge_index
       | int + 1) % (list | length) }}
 
       '
-    lounge_next_entity: '{% set list = kitchen_scene_entities %} {{ list[kitchen_next_index
+    lounge_next_entity: '{% set list = lounge_scene_entities %} {{ list[lounge_next_index
       | int] }}
 
       '
     living_scene_entities:
-    - scene.living_bright
-    - scene.living_bench_cool_bright
-    - scene.living_bench_dreamy_dusk
-    - scene.living_bench_lake_placid
-    - scene.living_bench_nightlight
-    - scene.living_bench_nighttime
-    - scene.living_bench_read
-    - scene.living_bench_savanna_sunset
-    - scene.living_bench_shine
-    - scene.living_bench_tropical_twilight
+    - scene.living_room_bright
+    - scene.living_room_cool_bright
+    - scene.living_room_dreamy_dusk
+    - scene.living_room_lake_placid
+    - scene.living_room_nightlight
+    - scene.living_room_nighttime
+    - scene.living_room_read
+    - scene.living_room_savanna_sunset
+    - scene.living_room_shine
+    - scene.living_room_tropical_twilight
     living_current: '{{ states(''input_select.scene_cycle_living_room'') }}'
     living_index: "{% set list = living_scene_entities %} {% if living_current in
       list %}\n  {{ list.index(living_current) }}\n{% else %}\n  0\n{% endif %}\n"
