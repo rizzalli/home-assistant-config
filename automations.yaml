@@ -1,32 +1,7 @@
-- id: '1763434065187'
-  alias: Derryn Arrives - Purifier Auto
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id: device_tracker.rizzas_iphone
-    from: not_home
-    to: home
-  conditions: []
-  actions:
-  - parallel:
-    - action: fan.set_preset_mode
-      metadata: {}
-      data:
-        preset_mode: auto
-      target:
-        entity_id: fan.levoit
-    - action: timer.cancel
-      data: {}
-      target:
-        entity_id: timer.purifier_auto_timer_away
-    - action: timer.cancel
-      target:
-        entity_id: timer.purifier_auto_timer_nightly
-  mode: single
-- id: '1763434573916'
+# Time-based routines
+- id: '1763256475040'
   alias: Purifier - Night Auto-Clean
-  description: Runs Levoit at 100% from 23:55 for 3 hours, then Auto; cancels if put
-    in Auto early.
+  description: Runs Levoit at 100% from 23:55 for 3 hours, then Auto; cancels if put in Auto early.
   triggers:
   - at: '23:55:00'
     id: start
@@ -93,3 +68,339 @@
           preset_mode: auto
         action: fan.set_preset_mode
   mode: single
+
+# Location-based routines
+- id: '1763000551180'
+  alias: 'Leaves Home - Light Off / Media Off / Purifier High 2 hours '
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: device_tracker.rizzas_iphone
+    from: home
+    to: not_home
+  conditions: []
+  actions:
+  - parallel:
+    - sequence:
+      - action: fan.set_percentage
+        target:
+          entity_id: fan.levoit
+        data:
+          percentage: 100
+      - action: timer.cancel
+        target:
+          entity_id: timer.purifier_auto_timer_nightly
+      - action: timer.start
+        target:
+          entity_id: timer.purifier_auto_timer_away
+      - delay:
+          hours: 2
+          minutes: 0
+          seconds: 0
+          milliseconds: 0
+      - action: fan.set_preset_mode
+        target:
+          entity_id: fan.levoit
+        data:
+          preset_mode: auto
+    - sequence:
+      - action: light.turn_off
+        target:
+          entity_id: light.home
+      - action: remote.turn_off
+        target:
+          device_id: 5bc5da8668985a86ddc52f3b9ea78280
+      - action: media_player.media_pause
+        target:
+          device_id: 66e989b271090f6003939143c7ab81eb
+      - action: remote.turn_off
+        target:
+          device_id: b79fc09211ba72a028332fee043d1b51
+  mode: single
+
+- id: '1763003924178'
+  alias: Derryn Arrives - Purifier Auto
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: device_tracker.rizzas_iphone
+    from: not_home
+    to: home
+  conditions: []
+  actions:
+  - parallel:
+    - action: fan.set_preset_mode
+      metadata: {}
+      data:
+        preset_mode: auto
+      target:
+        entity_id: fan.levoit
+    - action: timer.cancel
+      data: {}
+      target:
+        entity_id: timer.purifier_auto_timer_away
+    - action: timer.cancel
+      target:
+        entity_id: timer.purifier_auto_timer_nightly
+  mode: single
+
+
+
+
+
+# Kitchen Hue switch — Scene Cycle + dimming
+
+- id: '1763215181108'
+  alias: Kitchen Switch - Scene Cycle
+  description: Cycle scenes on bottom button, dim with middle buttons
+  triggers:
+    - trigger: event
+      event_type: hue_event
+      event_data:
+        device_id: f78a17037acdcf611747baa436eebd1a
+  variables:
+    kitchen_scene_entities: "{{ state_attr('input_select.scene_cycle_kitchen', 'options') or [] }}"
+    kitchen_current: "{{ states('input_select.scene_cycle_kitchen') }}"
+    kitchen_index: >
+      {% set list = kitchen_scene_entities %}
+      {% if kitchen_current in list %}
+        {{ list.index(kitchen_current) }}
+      {% else %} 0 {% endif %}
+    kitchen_next_index: >
+      {% set list = kitchen_scene_entities %}
+      {% set length = list|length %}
+      {% if length == 0 %} 0 {% else %} {{ (kitchen_index|int + 1) % length }} {% endif %}
+    kitchen_next_entity: "{{ kitchen_scene_entities[kitchen_next_index|int] }}"
+    bench_scene_entities: "{{ state_attr('input_select.scene_cycle_kitchen_bench', 'options') or [] }}"
+    bench_current: "{{ states('input_select.scene_cycle_kitchen_bench') }}"
+    bench_index: >
+      {% set list = bench_scene_entities %}
+      {% if bench_current in list %} {{ list.index(bench_current) }} {% else %} 0 {% endif %}
+    bench_next_index: >
+      {% set list = bench_scene_entities %}
+      {% set length = list|length %}
+      {% if length == 0 %} 0 {% else %} {{ (bench_index|int + 1) % length }} {% endif %}
+    bench_next_entity: "{{ bench_scene_entities[bench_next_index|int] }}"
+  actions:
+    - choose:
+        - alias: Button 1 - Short Release (Cycle Bench Scenes)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.platform == 'event' and trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 1 }}
+          sequence:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ bench_next_entity }}"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.scene_cycle_kitchen_bench
+              data:
+                option: "{{ bench_next_entity }}"
+
+        - alias: Button 1 - Long Release (Bench Off)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.platform == 'event' and trigger.event.data.type == 'long_release' and trigger.event.data.subtype == 1 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.kitchen_bench
+              data:
+                transition: 5
+
+        - alias: Button 2 - Short Release (Brightness Up)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 2 }}
+          sequence:
+            - action: light.turn_on
+              target:
+                area_id: kitchen
+              data:
+                brightness_step_pct: 20
+
+        - alias: Button 3 - Short Release (Brightness Down)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 3 }}
+          sequence:
+            - action: light.turn_on
+              target:
+                area_id: kitchen
+              data:
+                brightness_step_pct: -20
+
+        - alias: Button 4 - Short Release (Cycle Kitchen Scenes)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 4 }}
+          sequence:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ kitchen_next_entity }}"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.scene_cycle_kitchen
+              data:
+                option: "{{ kitchen_next_entity }}"
+
+        - alias: Button 4 - Long Release (Kitchen Off)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'long_release' and trigger.event.data.subtype == 4 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.kitchen
+              data:
+                transition: 5
+  mode: single
+  
+  
+  
+  # Lounge Hue Switch — Scene Cycle + dimming
+
+- id: '1763294657209'
+  alias: Lounge Switch
+  description: Cycle scenes on bottom button, dim with middle buttons
+  triggers:
+    - trigger: event
+      event_type: hue_event
+      event_data:
+        device_id: 8110fb5d28433b9a8fea072d30876c64
+  variables:
+    lounge_scene_entities: "{{ state_attr('input_select.scene_cycle_lounge', 'options') or [] }}"
+    lounge_current: "{{ states('input_select.scene_cycle_lounge') }}"
+    lounge_index: >
+      {% set list = lounge_scene_entities %}
+      {% if lounge_current in list %} {{ list.index(lounge_current) }} {% else %} 0 {% endif %}
+    lounge_next_index: >
+      {% set list = lounge_scene_entities %}
+      {% set length = list|length %}
+      {% if length == 0 %} 0 {% else %} {{ (lounge_index|int + 1) % length }} {% endif %}
+    lounge_next_entity: "{{ lounge_scene_entities[lounge_next_index|int] }}"
+  actions:
+    - choose:
+        - alias: Button 1 - Short Release (Cycle Living Scenes)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 1 }}
+          sequence:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ living_next_entity }}"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.scene_cycle_living_room
+              data:
+                option: "{{ living_next_entity }}"
+
+        - alias: Button 1 - Long Release (living off)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'long_release' and trigger.event.data.subtype == 1 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.living_room
+              data:
+                transition: 5
+
+        - alias: Button 2 - Short Release (Brightness Up)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 2 }}
+          sequence:
+            - action: light.turn_on
+              data:
+                brightness_step_pct: 20
+              target:
+                entity_id: light.living_room
+
+        - alias: Button 3 - Short Release (Brightness Down)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 3 }}
+          sequence:
+            - action: light.turn_on
+              data:
+                brightness_step_pct: -20
+              target:
+                entity_id: light.living_room
+
+        - alias: Button 4 - Short Release (Cycle Lounge Scenes)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'initial_press' and trigger.event.data.subtype == 4 }}
+          sequence:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ lounge_next_entity }}"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.scene_cycle_lounge
+              data:
+                option: "{{ lounge_next_entity }}"
+
+        - alias: Button 4 - Long Release (Lounge Off)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'long_release' and trigger.event.data.subtype == 4 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.lounge
+              data:
+                transition: 5
+  mode: single
+  
+  
+  # Motion-activated routines
+- id: '1762961175136'
+  alias: Pantry Light - Motion
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.pantry_motion
+    from: 'off'
+    to: 'on'
+  actions:
+  - action: script.motion_light_helper
+    data:
+      light_target: light.pantry
+      motion_sensor: binary_sensor.pantry_motion
+      off_delay: 120
+      transition: 10
+  mode: restart
+  max_exceeded: silent
+
+- id: '1762961284517'
+  alias: Laundry Light - Motion
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.laundry_motion
+    from: 'off'
+    to: 'on'
+  actions:
+  - action: script.motion_light_helper
+    data:
+      light_target: light.laundry
+      motion_sensor: binary_sensor.laundry_motion
+      brightness_pct: 80
+      off_delay: 120
+      transition: 10
+  mode: restart
+  max_exceeded: silent

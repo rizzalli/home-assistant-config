@@ -37,8 +37,8 @@ frontend:
 #    - /local/card-mod.js
 
 #load automation
-#automation: !include automations.yaml
-automation: !include_dir_merge_list automations/
+automation: !include automations.yaml
+#automation: !include_dir_merge_list automations/
 
 #script: !include scripts.yaml
 script: !include_dir_merge_named scripts/
