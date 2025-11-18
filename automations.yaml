@@ -299,9 +299,10 @@
         {% if '.' in raw %}
           {% set domain = raw.split('.', 1)[0] %}
           {% set object_id = raw.split('.', 1)[1] %}
-          {{ domain ~ '.' ~ object_id|regex_replace('[^0-9a-zA-Z_]', '_') }}
+          {% set safe_object = object_id.replace('.', '_').replace(' ', '_').replace('-', '_') %}
+          {{ domain ~ '.' ~ safe_object }}
         {% else %}
-          {{ raw|regex_replace('[^0-9a-zA-Z_]', '_') }}
+          {{ raw.replace('.', '_').replace(' ', '_').replace('-', '_') }}
         {% endif %}
       {% endif %}
     living_scene_entities: "{{ state_attr('input_select.scene_cycle_living_room', 'options') or [] }}"
