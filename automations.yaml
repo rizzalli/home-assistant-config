@@ -289,7 +289,13 @@
       {% if list|length == 0 %}
         none
       {% else %}
-        {{ list[lounge_next_index|int] }}
+        {% set raw = list[lounge_next_index|int] %}
+        {% set parts = raw.split('.', 1) %}
+        {% if parts|length == 2 %}
+          {{ parts[0] ~ '.' ~ parts[1].replace('.', '_') }}
+        {% else %}
+          {{ raw }}
+        {% endif %}
       {% endif %}
     living_scene_entities: "{{ state_attr('input_select.scene_cycle_living_room', 'options') or [] }}"
     living_current: "{{ states('input_select.scene_cycle_living_room') }}"
@@ -370,7 +376,7 @@
                 {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 4 }}
             - condition: template
               value_template: >
-                {{ lounge_next_entity is not none }}
+                {{ lounge_next_entity is not none and lounge_next_entity in states }}
           sequence:
             - action: scene.turn_on
               target:
