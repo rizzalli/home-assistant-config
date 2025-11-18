@@ -295,15 +295,17 @@
       {% if lounge_next_entity_raw is none %}
         none
       {% else %}
-        {% set raw = lounge_next_entity_raw %}
+        {% set raw = lounge_next_entity_raw | string %}
         {% if '.' in raw %}
-          {% set domain = raw.split('.', 1)[0] %}
-          {% set object_id = raw.split('.', 1)[1] %}
-          {% set safe_object = object_id.replace('.', '_').replace(' ', '_').replace('-', '_') %}
-          {{ domain ~ '.' ~ safe_object }}
+          {% set parts = raw.split('.', 1) %}
+          {% set domain = parts[0] %}
+          {% set object_id = parts[1] %}
         {% else %}
-          {{ raw.replace('.', '_').replace(' ', '_').replace('-', '_') }}
+          {% set domain = 'scene' %}
+          {% set object_id = raw %}
         {% endif %}
+        {% set sanitized = object_id.replace('.', '_').replace(' ', '_').replace('-', '_') %}
+        {{ domain ~ '.' ~ sanitized }}
       {% endif %}
     living_scene_entities: "{{ state_attr('input_select.scene_cycle_living_room', 'options') or [] }}"
     living_current: "{{ states('input_select.scene_cycle_living_room') }}"
@@ -384,7 +386,7 @@
                 {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 4 }}
             - condition: template
               value_template: >
-                {{ lounge_next_entity is not none and states.get(lounge_next_entity) }}
+                {{ lounge_next_entity is not none and lounge_next_entity in states }}
           sequence:
             - action: scene.turn_on
               target:
