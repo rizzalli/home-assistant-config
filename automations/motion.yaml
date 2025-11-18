@@ -1,0 +1,37 @@
+# Motion-activated routines
+- id: '1762961175136'
+  alias: Pantry Light - Motion
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.pantry_motion
+    from: 'off'
+    to: 'on'
+  actions:
+  - action: script.motion_light_helper
+    data:
+      light_target: light.pantry
+      motion_sensor: binary_sensor.pantry_motion
+      off_delay: 120
+      transition: 10
+  mode: restart
+  max_exceeded: silent
+
+- id: '1762961284517'
+  alias: Laundry Light - Motion
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.laundry_motion
+    from: 'off'
+    to: 'on'
+  actions:
+  - action: script.motion_light_helper
+    data:
+      light_target: light.laundry
+      motion_sensor: binary_sensor.laundry_motion
+      brightness_pct: 80
+      off_delay: 120
+      transition: 10
+  mode: restart
+  max_exceeded: silent

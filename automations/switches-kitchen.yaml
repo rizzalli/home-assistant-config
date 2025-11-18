@@ -1,0 +1,113 @@
+# Kitchen Hue switch — Scene Cycle + dimming
+
+- id: '1763215181108'
+  alias: Kitchen Switch - Scene Cycle
+  description: Cycle scenes on bottom button, dim with middle buttons
+  triggers:
+    - trigger: event
+      event_type: hue_event
+      event_data:
+        device_id: f78a17037acdcf611747baa436eebd1a
+  variables:
+    kitchen_scene_entities: "{{ state_attr('input_select.scene_cycle_kitchen', 'options') or [] }}"
+    kitchen_current: "{{ states('input_select.scene_cycle_kitchen') }}"
+    kitchen_index: >
+      {% set list = kitchen_scene_entities %}
+      {% if kitchen_current in list %}
+        {{ list.index(kitchen_current) }}
+      {% else %} 0 {% endif %}
+    kitchen_next_index: >
+      {% set list = kitchen_scene_entities %}
+      {% set length = list|length %}
+      {% if length == 0 %} 0 {% else %} {{ (kitchen_index|int + 1) % length }} {% endif %}
+    kitchen_next_entity: "{{ kitchen_scene_entities[kitchen_next_index|int] }}"
+    bench_scene_entities: "{{ state_attr('input_select.scene_cycle_kitchen_bench', 'options') or [] }}"
+    bench_current: "{{ states('input_select.scene_cycle_kitchen_bench') }}"
+    bench_index: >
+      {% set list = bench_scene_entities %}
+      {% if bench_current in list %} {{ list.index(bench_current) }} {% else %} 0 {% endif %}
+    bench_next_index: >
+      {% set list = bench_scene_entities %}
+      {% set length = list|length %}
+      {% if length == 0 %} 0 {% else %} {{ (bench_index|int + 1) % length }} {% endif %}
+    bench_next_entity: "{{ bench_scene_entities[bench_next_index|int] }}"
+  actions:
+    - choose:
+        - alias: Button 1 - Short Release (Cycle Bench Scenes)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.platform == 'event' and trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 1 }}
+          sequence:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ bench_next_entity }}"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.scene_cycle_kitchen_bench
+              data:
+                option: "{{ bench_next_entity }}"
+
+        - alias: Button 1 - Long Release (Bench Off)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.platform == 'event' and trigger.event.data.type == 'long_release' and trigger.event.data.subtype == 1 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.kitchen_bench
+              data:
+                transition: 5
+
+        - alias: Button 2 - Short Release (Brightness Up)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 2 }}
+          sequence:
+            - action: light.turn_on
+              target:
+                area_id: kitchen
+              data:
+                brightness_step_pct: 20
+
+        - alias: Button 3 - Short Release (Brightness Down)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 3 }}
+          sequence:
+            - action: light.turn_on
+              target:
+                area_id: kitchen
+              data:
+                brightness_step_pct: -20
+
+        - alias: Button 4 - Short Release (Cycle Kitchen Scenes)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'short_release' and trigger.event.data.subtype == 4 }}
+          sequence:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ kitchen_next_entity }}"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.scene_cycle_kitchen
+              data:
+                option: "{{ kitchen_next_entity }}"
+
+        - alias: Button 4 - Long Release (Kitchen Off)
+          conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.event.data.type == 'long_release' and trigger.event.data.subtype == 4 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.kitchen
+              data:
+                transition: 5
+  mode: single

@@ -1,0 +1,39 @@
+activate_scene_and_track:
+  alias: Activate Scene and Track
+  description: Turns on a scene and saves it to input_text.active_scene.
+  mode: single
+
+  fields:
+    scene:
+      name: Scene to Activate
+      selector:
+        entity:
+          domain: scene
+
+  sequence:
+    - action: scene.turn_on
+      data:
+        entity_id: "{{ scene }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.active_scene
+      data:
+        value: "{{ scene }}"
+
+
+deactivate_scene_and_clear:
+  alias: Deactivate Scene and Clear
+  description: Turns off the home lights and clears the active scene tracker.
+  mode: single
+
+  sequence:
+    - action: light.turn_off
+      target:
+        entity_id: light.group_home
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.active_scene
+      data:
+        value: ""

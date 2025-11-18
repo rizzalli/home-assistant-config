@@ -1,0 +1,158 @@
+motion_light_helper:
+  alias: Motion-activated light helper
+  description: >
+    Smart motion lighting with night mode, lux-based brightness,
+    fade-in, fade-out, and configurable delay.
+  icon: mdi:motion-sensor
+  mode: restart
+
+  fields:
+    light_target:
+      name: Light
+      selector:
+        target:
+          entity:
+            domain: light
+
+    motion_sensor:
+      name: Motion sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class:
+            - motion
+            - occupancy
+
+    lux_sensor:
+      name: Lux sensor
+      description: "The sensor measuring brightness in the room."
+      required: false
+      selector:
+        entity:
+          domain: sensor
+
+    off_delay:
+      name: Clear duration (seconds)
+      default: 120
+      selector:
+        number:
+          min: 5
+          max: 900
+          mode: slider
+
+    day_brightness:
+      name: Daytime Brightness (fallback)
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+
+    evening_brightness:
+      name: Evening Brightness (fallback)
+      default: 60
+      selector:
+        number:
+          min: 1
+          max: 100
+
+    night_brightness:
+      name: Night Mode Brightness (fallback)
+      default: 20
+      selector:
+        number:
+          min: 1
+          max: 100
+
+    fade_in:
+      name: Fade-in (seconds)
+      default: 3
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: slider
+
+    fade_out:
+      name: Fade-out (seconds)
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: slider
+
+  variables:
+    _sensor: "{{ motion_sensor }}"
+    _light: "{{ light_target }}"
+    _off_delay: "{{ off_delay | int }}"
+    _fade_in: "{{ fade_in | int }}"
+    _fade_out: "{{ fade_out | int }}"
+    _lux_sensor: "{{ lux_sensor }}"
+
+    # Time periods
+    _hour: "{{ now().hour }}"
+
+    # Night mode automatically 23:00–06:00
+    is_night: "{{ _hour >= 23 or _hour < 6 }}"
+
+    # Evening (19:00–23:00)
+    is_evening: "{{ _hour >= 19 and _hour < 23 }}"
+
+    # Determine brightness from lux if sensor exists
+    lux_value: >
+      {% if _lux_sensor %}
+        {{ states(_lux_sensor) | float(0) }}
+      {% else %}
+        -1
+      {% endif %}
+
+    lux_based_brightness: >
+      {% if lux_value < 0 %}
+        omit
+      {% elif lux_value < 5 %}
+        100
+      {% elif lux_value < 20 %}
+        80
+      {% elif lux_value < 60 %}
+        50
+      {% elif lux_value < 120 %}
+        25
+      {% else %}
+        10
+      {% endif %}
+
+    # Final brightness logic
+    final_brightness: >
+      {% if lux_value >= 0 %}
+        {{ lux_based_brightness }}
+      {% elif is_night %}
+        {{ night_brightness }}
+      {% elif is_evening %}
+        {{ evening_brightness }}
+      {% else %}
+        {{ day_brightness }}
+      {% endif %}
+
+  sequence:
+    # Turn on with dynamic brightness and fade-in
+    - action: light.turn_on
+      target: "{{ _light }}"
+      data:
+        transition: "{{ _fade_in }}"
+        brightness_pct: "{{ final_brightness }}"
+
+    # Wait for motion to stop
+    - wait_for_trigger:
+        - platform: template
+          value_template: "{{ states(_sensor) == 'off' }}"
+
+    # Wait X seconds after clear
+    - delay: "{{ _off_delay }}"
+
+    # Fade out
+    - action: light.turn_off
+      target: "{{ _light }}"
+      data:
+        transition: "{{ _fade_out }}"
+
