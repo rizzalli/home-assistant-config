@@ -86,8 +86,8 @@ motion_light_helper:
     _sensor: "{{ motion_sensor }}"
     _light: "{{ light_target }}"
     _off_delay: "{{ off_delay | int }}"
-    _fade_in: "{{ fade_in | int }}"
-    _fade_out: "{{ fade_out | int }}"
+    _fade_in: "{{ (fade_in | default(3)) | int }}"
+    _fade_out: "{{ (fade_out | default(10)) | int }}"
     _lux_sensor: "{{ lux_sensor }}"
 
     # Time periods
